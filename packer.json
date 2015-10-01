@@ -1,0 +1,33 @@
+{
+    "builders": [
+        {
+            "export_path": "{{template_dir}}/images/latest.tar",
+            "image": "docker.clarin.eu/alpine:latest",
+            "run_command": [
+                "-d",
+                "-i",
+                "-t",
+                "{{.Image}}",
+                "/bin/sh"
+            ],
+            "pull": false,
+            "type": "docker",
+            "volumes": {"{{template_dir}}/resources/etc/haproxy/": "/etc/haproxy/"}
+        }
+    ],
+    "post-processors": [
+        {
+            "repository": "docker.clarin.eu/alpine-haproxy",
+            "tag": "latest",
+            "type": "docker-import"
+        }
+    ],
+    "provisioners": [
+        {
+            "scripts": [
+                "provision.sh"
+            ],
+            "type": "shell"
+        }
+    ]
+}

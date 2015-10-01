@@ -1,0 +1,57 @@
+This virtualized service provides a HAProxy HTTP frontend for the https://github.com/clarin-eric/virtual_centre_registry[CLARIN Centre Registry]. The dependencies and other resources are under link:resources/[`resources/`].
+
+== Requirements
+
+* https://packer.io[Packer].
+* https://www.docker.com/[Docker].
+
+=== Suggested requirements
+
+* The `readlink` command-line utility, offered by http://www.gnu.org/software/coreutils/coreutils.html[GNU coreutils].
+* https://www.sudo.ws/[`sudo`].
+
+== To build
+
+* Follow this https://github.com/sanmai-NL/guide_on_submodules[brief guide on submodules] to learn how to manage dependency submodules, if you do not know it already. Complete https://github.com/sanmai-NL/recursive_packer_build/blob/master/Project_dependencies_as_Git_submodules.adoc#getting-started-with-a-git-repository-that-has-submodules[the recursive clone] or submodule initialization of this repository.
+* Complete a https://github.com/sanmai-NL/recursive_packer_build#to-use[recursive Packer build].
+
+== To configure
+
+[source,Sh]
+----
+docker create \
+    --entrypoint='/bin/sh' \
+    --link='centre_registry-latest.release.production:centre_registry' \
+    --name='centre_registry_haproxy_frontend-latest' \
+    --publish='443:443' \
+    --volume='/root/certstore/:/root/certstore/:ro' \
+    --volume="$(readlink -f 'resources/etc/haproxy/'):/etc/haproxy/" \
+    'docker.clarin.eu/alpine-haproxy:latest' \
+    -c "haproxy -f '/etc/haproxy/haproxy.cfg'"
+----
+
+== To run
+
+[source,Sh]
+----
+docker start --attach 'centre_registry_haproxy_frontend-latest'
+----
+
+== To deploy
+
+* Build.
+* From your workstation, push the container image to the desired Docker registry, like so:
++
+[source,Sh]
+----
+docker login 'https://docker.clarin.eu/' &&
+docker push 'docker.clarin.eu/alpine-haproxy:latest'
+----
+* On your server, pull the container image to your local Docker daemon:
++
+[source,Sh]
+----
+docker login 'https://docker.clarin.eu/' &&
+docker pull 'docker.clarin.eu/alpine-haproxy:latest'
+----
+* Configure and run a container based on 'docker.clarin.eu/alpine-haproxy:latest'.
