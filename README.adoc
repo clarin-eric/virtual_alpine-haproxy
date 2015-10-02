@@ -21,9 +21,11 @@ This virtualized service provides a HAProxy HTTP frontend for the https://github
 ----
 docker create \
     --entrypoint='/bin/sh' \
-    --link='centre_registry-latest.release.production:centre_registry' \
+    --link='centre_registry-latest.release.staging:centre_registry' \
     --name='centre_registry_haproxy_frontend-latest' \
     --publish='443:443' \
+    --tty='true' \
+    --volume='/dev/log:/dev/log' \
     --volume='/root/certstore/:/root/certstore/:ro' \
     --volume="$(readlink -f 'resources/etc/haproxy/'):/etc/haproxy/" \
     'docker.clarin.eu/alpine-haproxy:latest' \
@@ -34,24 +36,5 @@ docker create \
 
 [source,Sh]
 ----
-docker start --attach 'centre_registry_haproxy_frontend-latest'
+docker start 'centre_registry_haproxy_frontend-latest'
 ----
-
-== To deploy
-
-* Build.
-* From your workstation, push the container image to the desired Docker registry, like so:
-+
-[source,Sh]
-----
-docker login 'https://docker.clarin.eu/' &&
-docker push 'docker.clarin.eu/alpine-haproxy:latest'
-----
-* On your server, pull the container image to your local Docker daemon:
-+
-[source,Sh]
-----
-docker login 'https://docker.clarin.eu/' &&
-docker pull 'docker.clarin.eu/alpine-haproxy:latest'
-----
-* Configure and run a container based on 'docker.clarin.eu/alpine-haproxy:latest'.
